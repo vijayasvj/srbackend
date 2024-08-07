@@ -3,3 +3,4 @@ flask_sqlalchemy
 datetime
 sqlalchemy
 flask-cors
+Gunicorn
