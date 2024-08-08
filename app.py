@@ -1,10 +1,11 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import os
 import csv
 from sqlalchemy import inspect
 from flask_cors import CORS
+import pandas as pd
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
@@ -630,6 +631,35 @@ def read_optimized_requests():
         response['week'].append(week_data)
 
     return jsonify(response)
+
+@app.route('/download_optimized_excel', methods=['GET'])
+def download_optimized_excel():
+    # Fetch data from the OptimizedTable
+    optimized_requests = OptimizedTable.query.all()
+    
+    # Convert data to a pandas DataFrame
+    data = [{
+        'Date': req.date,
+        'Department': req.dept,
+        'Block Section Yard': req.block_section_yard,
+        'Line': req.line,
+        'Demanded Time From': req.demanded_time_from,
+        'Demanded Time To': req.demanded_time_to,
+        'Block Demanded in Hrs': req.block_demanded_in_hrs,
+        'Location From': req.location_from,
+        'Location To': req.location_to,
+        'Nature of Work': req.nature_of_work,
+        'Resources Needed': req.resources_needed,
+        'Supervisors Deputed': req.supervisors_deputed
+    } for req in optimized_requests]
+
+    df = pd.DataFrame(data)
+    
+    # Save DataFrame to an Excel file
+    filepath = 'optimized_requests.xlsx'
+    df.to_excel(filepath, index=False)
+    
+    return send_file(filepath, as_attachment=True)
 
 
 if __name__ == '__main__':
