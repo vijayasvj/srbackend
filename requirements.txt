@@ -4,3 +4,4 @@ datetime
 sqlalchemy
 flask-cors
 Gunicorn
+openpyxl
